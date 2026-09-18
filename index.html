@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Digitale Lernkarten zu den Fachbegriffen der schriftlichen Addition mit Manny.">
+  <title>Mannys Additionstraining</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a7180'/%3E%3Cpath d='M27 12h10v15h15v10H37v15H27V37H12V27h15z' fill='%23f5bd39'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #173044;
+      --muted: #5d6b75;
+      --paper: #fffdf7;
+      --cream: #f8f1df;
+      --blue: #1a7180;
+      --gold: #e2a317;
+      --line: rgba(23,48,68,.14);
+      --shadow: 0 24px 70px rgba(21,45,64,.18);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-rounded, "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(245,189,57,.24), transparent 25rem),
+        radial-gradient(circle at 88% 8%, rgba(43,116,181,.18), transparent 28rem),
+        linear-gradient(145deg, #f4f8f9 0%, #fffaf0 52%, #eef6f6 100%);
+    }
+    button, select { font: inherit; }
+    button { touch-action: manipulation; }
+    .shell { width: min(1120px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 34px; }
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .paw {
+      width: 52px; height: 52px; border-radius: 17px;
+      display: grid; place-items: center;
+      color: white; background: var(--blue); box-shadow: 0 10px 24px rgba(26,113,128,.23);
+      font-size: 29px; font-weight: 900;
+    }
+    h1 { font-size: clamp(1.35rem, 3vw, 2rem); line-height: 1.05; margin: 0; letter-spacing: -.02em; }
+    .brand p { margin: 5px 0 0; color: var(--muted); font-size: .95rem; }
+    .top-actions { display: flex; gap: 9px; align-items: center; }
+    select, .quiet {
+      border: 1px solid var(--line); background: rgba(255,255,255,.78); color: var(--ink);
+      min-height: 44px; border-radius: 13px; padding: 0 13px; font-weight: 750;
+    }
+    .quiet { cursor: pointer; }
+    .quiet:hover { background: white; border-color: rgba(26,113,128,.35); }
+    .progress-wrap {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
+      background: rgba(255,255,255,.72); border: 1px solid var(--line); border-radius: 16px;
+      padding: 11px 14px; margin-bottom: 18px; backdrop-filter: blur(8px);
+    }
+    .progress-label, .score { font-weight: 850; font-size: .92rem; white-space: nowrap; }
+    .track { height: 11px; background: #e4eaec; border-radius: 99px; overflow: hidden; }
+    .bar { height: 100%; width: 0%; border-radius: inherit; background: linear-gradient(90deg, #1a7180, #55a56e); transition: width .3s ease; }
+    main { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 22px; align-items: start; }
+    .study { min-width: 0; }
+    .counter { text-align: center; color: var(--muted); font-weight: 750; margin: 0 0 10px; }
+    .card-scene { perspective: 1400px; width: min(100%, 640px); height: 510px; margin: 0 auto; }
+    .card {
+      width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
+      transition: transform .62s cubic-bezier(.2,.75,.2,1); cursor: pointer;
+    }
+    .card.flipped { transform: rotateY(180deg); }
+    .face {
+      position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      border-radius: 30px; overflow: hidden; border: 2px solid var(--accent, var(--blue));
+      background: var(--paper); box-shadow: var(--shadow);
+    }
+    .back { transform: rotateY(180deg); padding: 26px; display: flex; flex-direction: column; }
+    .face-head { background: var(--accent, var(--blue)); color: white; text-align: center; padding: 19px 18px 17px; }
+    .face-kicker { font-weight: 900; font-size: .78rem; letter-spacing: .08em; }
+    .term { margin: 7px 0 2px; font-size: clamp(1.7rem, 5vw, 2.45rem); line-height: 1.05; text-wrap: balance; }
+    .subtitle { margin: 0; font-size: 1rem; opacity: .96; }
+    .visual { height: 285px; display: grid; place-items: center; padding: 18px; }
+    .visual img {
+      width: 244px; height: 244px; border-radius: 50%; object-fit: cover;
+      border: 6px solid var(--accent, var(--blue)); background: #fff7e5;
+      box-shadow: 0 13px 32px rgba(31,48,60,.16);
+    }
+    .front-tip { margin: 2px 22px 0; text-align: center; color: var(--muted); font-weight: 750; }
+    .front-tip strong { color: var(--accent, var(--blue)); }
+    .back-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 2px solid var(--line); padding-bottom: 14px; margin-bottom: 17px; }
+    .back-title h2 { margin: 0; color: var(--accent, var(--blue)); font-size: clamp(1.45rem, 4vw, 2rem); line-height: 1.05; }
+    .mini-badge { background: color-mix(in srgb, var(--accent) 12%, white); color: var(--accent); border-radius: 99px; padding: 7px 10px; font-weight: 850; font-size: .8rem; white-space: nowrap; }
+    .block { margin-bottom: 15px; }
+    .block h3 { margin: 0 0 6px; color: var(--accent, var(--blue)); font-size: .82rem; letter-spacing: .07em; }
+    .block p { margin: 0; font-size: 1.08rem; line-height: 1.45; }
+    .example { background: #edf3f2; border: 1px solid color-mix(in srgb, var(--accent) 38%, white); border-radius: 17px; padding: 14px 16px; }
+    .memory { margin-top: auto; background: var(--cream); border-radius: 15px; padding: 13px 15px; line-height: 1.38; }
+    .controls { display: grid; grid-template-columns: 1fr 1.35fr 1fr; gap: 10px; width: min(100%, 640px); margin: 16px auto 10px; }
+    .btn {
+      border: 0; border-radius: 15px; min-height: 50px; padding: 10px 14px;
+      font-weight: 900; cursor: pointer; transition: transform .16s ease, filter .16s ease;
+    }
+    .btn:hover { transform: translateY(-1px); filter: brightness(.98); }
+    .btn:focus-visible, select:focus-visible, .card:focus-visible { outline: 4px solid rgba(226,163,23,.55); outline-offset: 3px; }
+    .secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+    .flip { background: var(--blue); color: white; }
+    .rate { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: min(100%, 640px); margin: 0 auto; }
+    .again { background: #fff0ea; color: #b1442f; border: 1px solid #f2b4a6; }
+    .known { background: #e7f5e9; color: #24733d; border: 1px solid #9dd3aa; }
+    .rate .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    aside { background: rgba(255,255,255,.78); border: 1px solid var(--line); border-radius: 22px; padding: 18px; box-shadow: 0 15px 40px rgba(30,55,72,.1); }
+    aside h2 { margin: 0 0 13px; font-size: 1.08rem; }
+    .stat { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .stat:last-of-type { border-bottom: 0; }
+    .stat span { color: var(--muted); }
+    .stat strong { font-size: 1.05rem; }
+    .legend { margin-top: 15px; display: grid; gap: 8px; color: var(--muted); font-size: .88rem; line-height: 1.35; }
+    .key { display: inline-grid; place-items: center; min-width: 24px; min-height: 24px; padding: 0 6px; border: 1px solid var(--line); background: white; border-radius: 7px; color: var(--ink); font-weight: 850; }
+    .finish { display: none; width: min(100%, 640px); min-height: 510px; margin: 0 auto; background: white; border: 2px solid var(--blue); border-radius: 30px; box-shadow: var(--shadow); padding: 38px; text-align: center; place-items: center; }
+    .finish.show { display: grid; }
+    .finish-icon { width: 90px; height: 90px; border-radius: 28px; display: grid; place-items: center; margin: 0 auto 18px; background: #e8f5e9; color: #24733d; font-size: 46px; }
+    .finish h2 { font-size: 2rem; margin: 0 0 10px; }
+    .finish p { color: var(--muted); font-size: 1.05rem; line-height: 1.5; }
+    .finish-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (max-width: 850px) {
+      header { grid-template-columns: 1fr; }
+      .top-actions { justify-content: space-between; }
+      main { grid-template-columns: 1fr; }
+      aside { width: min(100%, 640px); margin: 0 auto; }
+    }
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 18px, 1120px); padding-top: 12px; }
+      .brand p { display: none; }
+      .paw { width: 45px; height: 45px; border-radius: 14px; }
+      .top-actions { display: grid; grid-template-columns: 1fr auto; }
+      select { min-width: 0; width: 100%; }
+      .progress-wrap { grid-template-columns: 1fr auto; }
+      .track { grid-column: 1 / -1; grid-row: 2; }
+      .card-scene { height: 475px; }
+      .visual { height: 255px; }
+      .visual img { width: 215px; height: 215px; }
+      .back { padding: 21px; }
+      .block p { font-size: 1rem; }
+      .controls { grid-template-columns: 1fr 1.2fr 1fr; }
+      .btn { padding-inline: 8px; }
+      .finish { min-height: 475px; padding: 25px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card { transition: none; }
+      .btn { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="paw" aria-hidden="true">＋</div>
+        <div><h1>Mannys Additionstraining</h1><p>Fachbegriffe sicher verstehen und erklären</p></div>
+      </div>
+      <div class="top-actions">
+        <label class="sr-only" for="category">Kartengruppe auswählen</label>
+        <select id="category">
+          <option value="all">Alle 16 Karten</option>
+          <option value="basics">Grundbegriffe</option>
+          <option value="place">Stellenwerte</option>
+          <option value="method">Rechenweg</option>
+          <option value="check">Kontrolle</option>
+        </select>
+        <button class="quiet" id="shuffle" type="button" title="Karten mischen">Mischen</button>
+      </div>
+    </header>
+
+    <div class="progress-wrap" aria-label="Lernfortschritt">
+      <div class="progress-label" id="progressLabel">0 von 16 bearbeitet</div>
+      <div class="track"><div class="bar" id="progressBar"></div></div>
+      <div class="score" id="score">0 gewusst</div>
+    </div>
+
+    <main>
+      <section class="study" aria-label="Lernkarten">
+        <p class="counter" id="counter">Karte 1 von 16</p>
+        <div class="card-scene" id="scene">
+          <article class="card" id="card" tabindex="0" role="button" aria-label="Lernkarte umdrehen" aria-pressed="false">
+            <div class="face front">
+              <div class="face-head">
+                <div class="face-kicker">MANNYS ZAHLENSTADT</div>
+                <h2 class="term" id="frontTerm"></h2>
+                <p class="subtitle" id="frontSubtitle"></p>
+              </div>
+              <div class="visual"><img id="cardImage" src="" alt=""></div>
+              <p class="front-tip">Was bedeutet dieser Begriff?<br><strong>Karte antippen und prüfen</strong></p>
+            </div>
+            <div class="face back">
+              <div class="back-title"><h2 id="backTerm"></h2><span class="mini-badge">Lösung</span></div>
+              <div class="block"><h3>BEDEUTUNG</h3><p id="meaning"></p></div>
+              <div class="block example"><h3>BEISPIEL</h3><p id="example"></p></div>
+              <div class="memory" id="memory"></div>
+            </div>
+          </article>
+        </div>
+
+        <section class="finish" id="finish" aria-live="polite">
+          <div>
+            <div class="finish-icon" aria-hidden="true">✓</div>
+            <h2>Runde geschafft!</h2>
+            <p id="finishText"></p>
+            <div class="finish-actions">
+              <button class="btn known" id="retryUnsure" type="button">Unsichere wiederholen</button>
+              <button class="btn flip" id="restart" type="button">Alle neu starten</button>
+            </div>
+          </div>
+        </section>
+
+        <div class="controls" id="controls">
+          <button class="btn secondary" id="prev" type="button" aria-label="Vorherige Karte">← Zurück</button>
+          <button class="btn flip" id="flip" type="button">Karte umdrehen</button>
+          <button class="btn secondary" id="next" type="button" aria-label="Nächste Karte">Weiter →</button>
+        </div>
+        <div class="rate" id="rating">
+          <button class="btn again" id="again" type="button" disabled>Noch üben</button>
+          <button class="btn known" id="known" type="button" disabled>Gewusst!</button>
+        </div>
+      </section>
+
+      <aside aria-label="Lernstand">
+        <h2>Dein Lernstand</h2>
+        <div class="stat"><span>Gewusst</span><strong id="knownCount">0</strong></div>
+        <div class="stat"><span>Noch üben</span><strong id="againCount">0</strong></div>
+        <div class="stat"><span>Offen</span><strong id="openCount">16</strong></div>
+        <button class="quiet" id="reset" type="button" style="width:100%;margin-top:14px">Lernstand zurücksetzen</button>
+        <div class="legend">
+          <div><span class="key">Leertaste</span> Karte umdrehen</div>
+          <div><span class="key">←</span> <span class="key">→</span> Karte wechseln</div>
+          <div>Dein Lernstand bleibt auf diesem Gerät gespeichert.</div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const cards = [
+      {term:'Addition', subtitle:'eine Plusaufgabe', color:'#2E75B6', image:'assets/portrait_0.jpg', category:'basics', meaning:'Eine Addition ist eine Rechenart. Dabei werden Zahlen zusammengezählt.', example:'2786 + 958 = 3744', memory:'Das Pluszeichen + zeigt die Addition an.'},
+      {term:'addieren', subtitle:'zusammenzählen', color:'#2E86AB', image:'assets/portrait_1.jpg', category:'basics', meaning:'Addieren bedeutet: Zahlen zusammenzählen.', example:'Ich addiere 2786 und 958.', memory:'addieren = plusrechnen'},
+      {term:'Summand', subtitle:'eine Zahl der Addition', color:'#D19B1D', image:'assets/portrait_2.jpg', category:'basics', meaning:'Die Zahlen, die addiert werden, heißen Summanden.', example:'2786 + 958 = 3744<br><b>2786</b> und <b>958</b> sind Summanden.', memory:'Eine Addition kann zwei oder mehr Summanden haben.'},
+      {term:'Summe', subtitle:'das Ergebnis', color:'#C98718', image:'assets/portrait_3.jpg', category:'basics', meaning:'Das Ergebnis einer Addition heißt Summe.', example:'2786 + 958 = <b>3744</b><br>Die Summe ist 3744.', memory:'Summand + Summand = Summe'},
+      {term:'Stellenwert', subtitle:'der Wert einer Ziffer', color:'#337C86', image:'assets/portrait_4.jpg', category:'place', meaning:'Der Wert einer Ziffer hängt davon ab, an welcher Stelle sie steht.', example:'In 2786 hat die 7 den Wert <b>700</b>.', memory:'Gleiche Ziffer – anderer Platz – anderer Wert.'},
+      {term:'Stellenwerttafel', subtitle:'T – H – Z – E', color:'#3C6F9C', image:'assets/portrait_5.jpg', category:'place', meaning:'Die Stellenwerttafel ordnet jede Ziffer ihrem richtigen Platz zu.', example:'2786: T = 2, H = 7, Z = 8, E = 6', memory:'Jede Ziffer wohnt in ihrem eigenen Zimmer.'},
+      {term:'Einer', subtitle:'E – ganz rechts', color:'#E0A51C', image:'assets/portrait_6.jpg', category:'place', meaning:'Die Einerstelle steht ganz rechts. Einzelne Dinge werden hier gezählt.', example:'278<b>6</b>: Die 6 bedeutet 6 Einer.', memory:'10 Einer werden zu 1 Zehner gebündelt.'},
+      {term:'Zehner', subtitle:'Z – zweite Stelle', color:'#D95C46', image:'assets/portrait_7.jpg', category:'place', meaning:'Die Zehnerstelle steht links neben den Einern.', example:'27<b>8</b>6: Die 8 bedeutet 80.', memory:'10 Zehner werden zu 1 Hunderter gebündelt.'},
+      {term:'Hunderter', subtitle:'H – dritte Stelle', color:'#419662', image:'assets/portrait_8.jpg', category:'place', meaning:'Die Hunderterstelle steht links neben den Zehnern.', example:'2<b>7</b>86: Die 7 bedeutet 700.', memory:'10 Hunderter werden zu 1 Tausender gebündelt.'},
+      {term:'Tausender', subtitle:'T – vierte Stelle', color:'#2868A0', image:'assets/portrait_9.jpg', category:'place', meaning:'Die Tausenderstelle steht links neben den Hundertern.', example:'<b>2</b>786: Die 2 bedeutet 2000.', memory:'10 Hunderterplatten ergeben 1 Tausenderwürfel.'},
+      {term:'Übertrag', subtitle:'bündeln und mitnehmen', color:'#E97828', image:'assets/portrait_10.jpg', category:'method', meaning:'Ist das Ergebnis einer Spalte 10 oder größer, wird gebündelt. Die kleine weitergetragene Zahl heißt Übertrag.', example:'6 + 8 = 14<br>4 schreiben, 1 übertragen.', memory:'Den Übertrag in der nächsten Spalte mitrechnen!'},
+      {term:'Überschlag', subtitle:'ungefähr rechnen', color:'#7660AD', image:'assets/portrait_11.jpg', category:'check', meaning:'Beim Überschlag werden Zahlen sinnvoll gerundet. So wird das Ergebnis ungefähr vorausgesagt.', example:'2786 ≈ 2800 und 958 ≈ 1000<br>2800 + 1000 ≈ 3800', memory:'Der Überschlag zeigt, ob das Ergebnis passen kann.'},
+      {term:'Probe', subtitle:'das Ergebnis prüfen', color:'#6653A3', image:'assets/portrait_12.jpg', category:'check', meaning:'Mit einer Probe wird kontrolliert, ob ein Ergebnis richtig ist.', example:'3744 − 958 = 2786<br>Die Rechnung passt.', memory:'Ein Rechenprofi prüft sein Ergebnis.'},
+      {term:'Umkehraufgabe', subtitle:'plus wird minus', color:'#8A5AA6', image:'assets/portrait_13.jpg', category:'check', meaning:'Mit der Umkehraufgabe mache ich eine Rechnung rückgängig: Aus Plus wird Minus.', example:'2786 + 958 = 3744<br>3744 − 958 = 2786', memory:'Mit der Umkehraufgabe kann ich prüfen.'},
+      {term:'Tauschgesetz', subtitle:'Summanden tauschen', color:'#C0528A', image:'assets/portrait_14.jpg', category:'check', meaning:'Bei einer Addition dürfen die Summanden vertauscht werden. Die Summe bleibt gleich.', example:'2786 + 958 = 958 + 2786', memory:'Tauschen erlaubt – Ergebnis bleibt gleich.'},
+      {term:'Schriftliche Addition', subtitle:'Mannys Vier-Schritte-Plan', color:'#187A85', image:'assets/portrait_15.jpg', category:'method', meaning:'Große Zahlen werden ordentlich untereinander addiert.', example:'1. Stelle unter Stelle<br>2. Rechts starten<br>3. Übertrag mitnehmen<br>4. Ergebnis prüfen', memory:'Ordentlich schreiben – von rechts nach links rechnen.'}
+    ];
+
+    const el = id => document.getElementById(id);
+    const stateKey = 'mannys-additionstraining-v1';
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(stateKey) || '{}'); } catch (_) { saved = {}; }
+    let ratings = saved.ratings || {};
+    let filter = saved.filter || 'all';
+    let order = cards.map((_,i) => i);
+    let current = 0;
+    let flipped = false;
+    let finished = false;
+
+    function filteredOrder(){ return order.filter(i => filter === 'all' || cards[i].category === filter); }
+    function activeIndex(){ const list=filteredOrder(); return list[Math.min(current, Math.max(0,list.length-1))]; }
+    function persist(){ localStorage.setItem(stateKey, JSON.stringify({ratings, filter})); }
+
+    function render(){
+      const list = filteredOrder();
+      if (!list.length) return;
+      current = Math.min(current, list.length-1);
+      const idx = activeIndex(), item = cards[idx];
+      el('card').style.setProperty('--accent', item.color);
+      el('frontTerm').textContent = item.term;
+      el('frontSubtitle').textContent = item.subtitle;
+      el('backTerm').textContent = item.term;
+      el('meaning').textContent = item.meaning;
+      el('example').innerHTML = item.example;
+      el('memory').innerHTML = '<b>MERKSATZ:</b> ' + item.memory;
+      el('cardImage').src = item.image;
+      el('cardImage').alt = 'Bildkarte zu ' + item.term;
+      el('counter').textContent = `Karte ${current+1} von ${list.length}`;
+      el('card').classList.toggle('flipped', flipped);
+      el('card').setAttribute('aria-pressed', String(flipped));
+      el('flip').textContent = flipped ? 'Vorderseite zeigen' : 'Karte umdrehen';
+      el('again').disabled = !flipped;
+      el('known').disabled = !flipped;
+      updateStats();
+    }
+
+    function updateStats(){
+      const list=filteredOrder();
+      const statuses=list.map(i=>ratings[i]);
+      const known=statuses.filter(x=>x==='known').length;
+      const again=statuses.filter(x=>x==='again').length;
+      const done=known+again;
+      el('progressLabel').textContent=`${done} von ${list.length} bearbeitet`;
+      el('progressBar').style.width=`${list.length ? done/list.length*100 : 0}%`;
+      el('score').textContent=`${known} gewusst`;
+      el('knownCount').textContent=known;
+      el('againCount').textContent=again;
+      el('openCount').textContent=list.length-done;
+    }
+
+    function toggleFlip(){ if(finished) return; flipped=!flipped; render(); }
+    function move(delta){
+      if(finished) return;
+      const len=filteredOrder().length;
+      current=(current+delta+len)%len; flipped=false; render();
+    }
+    function rate(value){
+      if(!flipped) return;
+      ratings[activeIndex()]=value; persist(); updateStats();
+      const list=filteredOrder();
+      const allDone=list.every(i=>ratings[i]);
+      if(allDone && current===list.length-1){ showFinish(); return; }
+      current=(current+1)%list.length; flipped=false; render();
+    }
+    function showFinish(){
+      finished=true; el('scene').hidden=true; el('controls').hidden=true; el('rating').hidden=true;
+      const list=filteredOrder(); const k=list.filter(i=>ratings[i]==='known').length; const a=list.filter(i=>ratings[i]==='again').length;
+      el('finishText').textContent=`Du hast ${k} Begriffe gewusst. ${a ? `${a} Begriffe kannst du jetzt noch einmal üben.` : 'Du hast alle Begriffe sicher geschafft!'}`;
+      el('retryUnsure').hidden=!a; el('finish').classList.add('show');
+    }
+    function leaveFinish(){ finished=false; el('scene').hidden=false; el('controls').hidden=false; el('rating').hidden=false; el('finish').classList.remove('show'); }
+    function restart(all=true){ if(all) ratings={}; order=cards.map((_,i)=>i); current=0; flipped=false; leaveFinish(); persist(); render(); }
+
+    el('card').addEventListener('click',toggleFlip);
+    el('card').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleFlip();} });
+    el('flip').addEventListener('click',toggleFlip);
+    el('prev').addEventListener('click',()=>move(-1));
+    el('next').addEventListener('click',()=>move(1));
+    el('again').addEventListener('click',()=>rate('again'));
+    el('known').addEventListener('click',()=>rate('known'));
+    el('shuffle').addEventListener('click',()=>{ order.sort(()=>Math.random()-.5); current=0; flipped=false; render(); });
+    el('category').value=filter;
+    el('category').addEventListener('change',e=>{ filter=e.target.value; current=0; flipped=false; persist(); leaveFinish(); render(); });
+    el('reset').addEventListener('click',()=>restart(true));
+    el('restart').addEventListener('click',()=>restart(true));
+    el('retryUnsure').addEventListener('click',()=>{
+      const unsure=filteredOrder().filter(i=>ratings[i]==='again');
+      order=[...unsure,...order.filter(i=>!unsure.includes(i))];
+      unsure.forEach(i=>delete ratings[i]); current=0; flipped=false; leaveFinish(); persist(); render();
+    });
+    document.addEventListener('keydown',e=>{
+      if(['INPUT','SELECT','BUTTON'].includes(document.activeElement.tagName)) return;
+      if(e.key===' '){e.preventDefault();toggleFlip();}
+      if(e.key==='ArrowLeft') move(-1);
+      if(e.key==='ArrowRight') move(1);
+    });
+    render();
+  </script>
+</body>
+</html>
